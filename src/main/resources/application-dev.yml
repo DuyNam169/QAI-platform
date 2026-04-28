@@ -6,6 +6,8 @@ spring:
     show-sql: true
   flyway:
     clean-disabled: false
+  config:
+    import: optional:dotenv:.env
 
 logging:
   level:
