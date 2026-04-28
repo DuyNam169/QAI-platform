@@ -1,0 +1,22 @@
+spring:
+  ai:
+    openai:
+      api-key: "dummy-not-used"
+  jpa:
+    show-sql: true
+  flyway:
+    clean-disabled: false
+
+logging:
+  level:
+    com.daoninhthai.aichatbot: DEBUG
+    org.springframework.ai: DEBUG
+    org.hibernate.SQL: DEBUG
+
+ai:
+  service:
+    url: http://localhost:8000
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
