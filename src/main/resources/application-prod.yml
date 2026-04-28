@@ -4,6 +4,6 @@ spring:
 
 logging:
   level:
-    com.daoninhthai.aichatbot: INFO
+    com.QAI.aichatbot: INFO
     org.springframework.ai: WARN
     root: WARN
