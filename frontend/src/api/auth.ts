@@ -8,6 +8,12 @@ export const authApi = {
   register: (data: RegisterRequest) =>
     apiClient.post<AuthResponse>('/auth/register', data).then((r) => r.data),
 
+  /**
+   * Đăng nhập bằng Google ID Token (credential từ Google Identity Services)
+   */
+  loginWithGoogle: (credential: string) =>
+    apiClient.post<AuthResponse>('/auth/google', { credential }).then((r) => r.data),
+
   refresh: (refreshToken: string) =>
     apiClient.post<AuthResponse>('/auth/refresh', { refreshToken }).then((r) => r.data),
 
