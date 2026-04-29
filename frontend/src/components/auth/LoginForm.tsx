@@ -19,7 +19,7 @@ import {
 import './auth.css';
 
 export default function LoginForm() {
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { lang, toggleLang } = useLanguage();
   const T = translations[lang].login;
@@ -31,9 +31,8 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // buttonRef is used by GIS to inject the real Google button (hidden).
-  // We always show our custom Google button instead.
-  const { buttonRef } = useGoogleAuth();
+  // triggerGoogleSignIn triggers the GIS prompt; buttonRef holds the hidden GIS button
+  const { buttonRef, isConfigured, triggerGoogleSignIn } = useGoogleAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,31 +48,26 @@ export default function LoginForm() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     setError('');
-    try {
-      await loginWithGoogle();
-      navigate('/');
-    } catch {
-      setError(T.errorInvalid);
+    if (!isConfigured) {
+      setError('Google Sign-In chưa được cấu hình. Vui lòng liên hệ quản trị viên.');
+      return;
     }
+    triggerGoogleSignIn();
   };
 
   return (
     <div className="auth-page">
-      {/* Left: hero panel */}
       <HeroPanel lang={lang} />
 
-      {/* Right: form panel */}
       <div className="auth-right">
-        {/* Top bar */}
         <div className="auth-right-topbar">
           <LangToggle lang={lang} onToggle={toggleLang} />
         </div>
 
         <div className="auth-right-body">
           <AuthCard>
-            {/* Card header */}
             <div className="auth-card-header">
               <div className="auth-card-logo">
                 <BrandLogo size={32} />
@@ -87,7 +81,6 @@ export default function LoginForm() {
               <div className="auth-form-body">
                 <ErrorAlert message={error} />
 
-                {/* Google Sign-In — always visible */}
                 <GoogleSignInButton
                   label={translations[lang].loginWithGoogle ?? 'Continue with Google'}
                   divRef={buttonRef}
@@ -96,7 +89,6 @@ export default function LoginForm() {
 
                 <OrDivider label={translations[lang].or} />
 
-                {/* Email */}
                 <Field
                   label={T.emailLabel}
                   id="login-email"
@@ -108,7 +100,6 @@ export default function LoginForm() {
                   autoComplete="email"
                 />
 
-                {/* Password */}
                 <div className="auth-field">
                   <div className="auth-password-row">
                     <label htmlFor="login-password" className="auth-field-label">
@@ -144,7 +135,6 @@ export default function LoginForm() {
                   </div>
                 </div>
 
-                {/* Remember me */}
                 <label className="auth-remember">
                   <input
                     type="checkbox"
@@ -157,7 +147,6 @@ export default function LoginForm() {
 
               <SubmitBtn loading={loading} label={T.submitBtn} />
 
-              {/* Bottom link */}
               <p className="auth-bottom-link">
                 {T.noAccount}
                 <Link to="/register">{T.signUpLink}</Link>

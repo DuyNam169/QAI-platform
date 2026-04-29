@@ -2,7 +2,6 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-// Khai báo type cho Google Identity Services
 declare global {
   interface Window {
     google?: {
@@ -36,10 +35,6 @@ declare global {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
-/**
- * Hook quản lý toàn bộ luồng Google Sign-In.
- * Tự động load Google SDK và render button vào element được chỉ định.
- */
 export function useGoogleAuth() {
   const { loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -52,7 +47,6 @@ export function useGoogleAuth() {
         navigate('/');
       } catch (err) {
         console.error('Google login thất bại:', err);
-        // Để component cha xử lý lỗi – throw để caller catch được
         throw err;
       }
     },
@@ -88,13 +82,11 @@ export function useGoogleAuth() {
       }
     };
 
-    // Nếu SDK đã load rồi
     if (window.google) {
       initGoogle();
       return;
     }
 
-    // Load Google Identity Services SDK
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
@@ -103,10 +95,25 @@ export function useGoogleAuth() {
     document.head.appendChild(script);
 
     return () => {
-      // Cleanup: disable auto-select khi unmount
       window.google?.accounts.id.disableAutoSelect();
     };
   }, [handleCredentialResponse]);
 
-  return { buttonRef, isConfigured: !!GOOGLE_CLIENT_ID };
+  /**
+   * Trigger the Google sign-in popup/prompt programmatically.
+   * Call this when your custom Google button is clicked.
+   */
+  const triggerGoogleSignIn = useCallback(() => {
+    if (!GOOGLE_CLIENT_ID) {
+      console.warn('VITE_GOOGLE_CLIENT_ID chưa được cấu hình. Vui lòng thêm VITE_GOOGLE_CLIENT_ID vào file .env');
+      return;
+    }
+    if (window.google) {
+      window.google.accounts.id.prompt();
+    } else {
+      console.warn('Google Identity Services chưa load xong');
+    }
+  }, []);
+
+  return { buttonRef, isConfigured: !!GOOGLE_CLIENT_ID, triggerGoogleSignIn };
 }
