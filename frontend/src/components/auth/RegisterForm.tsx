@@ -19,7 +19,7 @@ import {
 import './auth.css';
 
 export default function RegisterForm() {
-  const { register, loginWithGoogle } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
   const { lang, toggleLang } = useLanguage();
   const T = translations[lang].register;
@@ -31,9 +31,7 @@ export default function RegisterForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // buttonRef is used by GIS to inject the real Google button (hidden).
-  // We always show our custom Google button instead.
-  const { buttonRef } = useGoogleAuth();
+  const { buttonRef, isConfigured, triggerGoogleSignIn } = useGoogleAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,33 +49,26 @@ export default function RegisterForm() {
     }
   };
 
-  const handleGoogleRegister = async () => {
+  const handleGoogleRegister = () => {
     setError('');
-    try {
-      await loginWithGoogle();
-      navigate('/');
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(typeof msg === 'string' ? msg : T.errorFailed);
+    if (!isConfigured) {
+      setError('Google Sign-In chưa được cấu hình. Vui lòng liên hệ quản trị viên.');
+      return;
     }
+    triggerGoogleSignIn();
   };
 
   return (
     <div className="auth-page">
-      {/* Left: hero panel */}
       <HeroPanel lang={lang} />
 
-      {/* Right: form panel */}
       <div className="auth-right">
-        {/* Top bar */}
         <div className="auth-right-topbar">
           <LangToggle lang={lang} onToggle={toggleLang} />
         </div>
 
         <div className="auth-right-body">
           <AuthCard>
-            {/* Card header */}
             <div className="auth-card-header">
               <div className="auth-card-logo">
                 <BrandLogo size={32} />
@@ -91,7 +82,6 @@ export default function RegisterForm() {
               <div className="auth-form-body">
                 <ErrorAlert message={error} />
 
-                {/* Google Sign-Up — always visible */}
                 <GoogleSignInButton
                   label={translations[lang].registerWithGoogle ?? 'Sign up with Google'}
                   divRef={buttonRef}
@@ -100,7 +90,6 @@ export default function RegisterForm() {
 
                 <OrDivider label={translations[lang].or} />
 
-                {/* Display name */}
                 <Field
                   label={T.nameLabel}
                   id="reg-name"
@@ -113,7 +102,6 @@ export default function RegisterForm() {
                   autoComplete="name"
                 />
 
-                {/* Email */}
                 <Field
                   label={T.emailLabel}
                   id="reg-email"
@@ -125,7 +113,6 @@ export default function RegisterForm() {
                   autoComplete="email"
                 />
 
-                {/* Password */}
                 <div className="auth-field">
                   <label htmlFor="reg-password" className="auth-field-label">
                     {T.passwordLabel}
@@ -160,7 +147,6 @@ export default function RegisterForm() {
 
               <SubmitBtn loading={loading} label={T.submitBtn} />
 
-              {/* Bottom link */}
               <p className="auth-bottom-link">
                 {T.hasAccount}
                 <Link to="/login">{T.loginLink}</Link>
